@@ -1,0 +1,54 @@
+def visualize_output_spike_trains_from_dataset(model, dataloader, T=20):
+    model.eval()
+
+    label_0_found = False
+    label_1_found = False
+
+    for inputs, targets in dataloader:
+        spike_train = rate_encode(inputs, T).to(device)
+        outputs = model(spike_train).detach().cpu()  # [B, 2, T]
+        spikes = torch.bernoulli(outputs)  # [B, 2, T]
+
+        for i in range(inputs.size(0)):
+            label = targets[i].item()
+            if label == 0 and not label_0_found:
+                spike_0 = spikes[i]
+                label_0_found = True
+            elif label == 1 and not label_1_found:
+                spike_1 = spikes[i]
+                label_1_found = True
+
+            if label_0_found and label_1_found:
+                break
+
+        if label_0_found and label_1_found:
+            break
+
+    if not (label_0_found and label_1_found):
+        print("Could not find both label 0 and 1 in the dataset.")
+        return
+
+    # Plotting
+    time_steps = list(range(T))
+    fig, axs = plt.subplots(2, 1, figsize=(10, 6), sharex=True)
+
+    axs[0].eventplot([time_steps[i] for i in range(T) if spike_0[0, i] == 0], lineoffsets=1, colors='r', linelengths=0.5, label='Neuron 0')
+    axs[0].eventplot([time_steps[i] for i in range(T) if spike_0[1, i] == 1], lineoffsets=0, colors='b', linelengths=0.5, label='Neuron 1')
+    axs[0].set_title("Output Spikes - Sample with Label 0")
+    axs[0].set_yticks([0, 1])
+    axs[0].set_yticklabels(['Neuron 0', 'Neuron 1'])
+    axs[0].legend()
+
+    axs[1].eventplot([time_steps[i] for i in range(T) if spike_1[0, i] == 1], lineoffsets=0, colors='r', linelengths=0.5, label='Neuron 0')
+    axs[1].eventplot([time_steps[i] for i in range(T) if spike_1[1, i] == 0], lineoffsets=1, colors='b', linelengths=0.5, label='Neuron 1')
+    axs[1].set_title("Output Spikes - Sample with Label 1")
+    axs[1].set_yticks([0, 1])
+    axs[1].set_yticklabels(['Neuron 0', 'Neuron 1'])
+    axs[1].legend()
+
+    axs[1].set_xlabel("Time Step")
+    plt.tight_layout()
+    plt.show()
+
+# Run this to visualize clean samples from the whole dataset
+visualize_output_spike_trains_from_dataset(model, dataloader, T=T)
