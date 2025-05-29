@@ -1,0 +1,39 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Parameters
+T = 50            # total time steps
+tau = 5           # decay constant
+num_neurons = 16  # number of spike trains
+
+# Generate random spike trains (each neuron has 5 spikes)
+np.random.seed(0)
+spike_trains = np.zeros((num_neurons, T))
+for n in range(num_neurons):
+    spike_times = np.random.choice(T, 5, replace=False)
+    spike_trains[n, spike_times] = 1
+
+# Compute decayed response for each neuron
+membrane_potentials = np.zeros((num_neurons, T))
+
+for n in range(num_neurons):
+    for t0 in np.where(spike_trains[n] == 1)[0]:
+        for t in range(t0, T):
+            membrane_potentials[n, t] += np.exp(-(t - t0) / tau)
+
+# Plot separate graph for each spike train and its membrane potential
+for n in range(num_neurons):
+    plt.figure(figsize=(8, 3))
+    plt.subplot(2, 1, 1)
+    plt.stem(range(T), spike_trains[n], basefmt="k-", linefmt='r-', markerfmt='ro')
+    plt.title(f"Spike Train S{n+1}")
+    plt.ylabel("Spike")
+    plt.ylim(-0.1, 1.2)
+
+    plt.subplot(2, 1, 2)
+    plt.plot(membrane_potentials[n], color='blue')
+    plt.title(f"Membrane Potential with Decay for S{n+1}")
+    plt.xlabel("Time")
+    plt.ylabel("Potential")
+    plt.tight_layout()
+    plt.show()
