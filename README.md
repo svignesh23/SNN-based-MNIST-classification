@@ -40,6 +40,9 @@ Probabilistic Spike Generator
   8) MULTI-HEAD ATTENTION
   9) FULL CODE FOR CLASSIFICATION
 
+**INPUT FILES**
+MNIST DATA SET FROM TORCHVISION.
+
 **PACKAGES AND DEPENDENCIES**
 | Import                   | Library            | Purpose                    |
 | ------------------------ | ------------------ | -------------------------- |
@@ -51,4 +54,7 @@ Probabilistic Spike Generator
 | `torchvision.transforms` | Torchvision        | Image preprocessing        |
 | `torch.utils.data`       | PyTorch utils      | DataLoader, Subset         |
 | `matplotlib.pyplot`      | Matplotlib         | Plotting and visualization |
+
+TO INSTALL THESE PACKAGES USE  :EXAMPLE
+!pip install torch torchvision matplotlib (IF USING JUPYTER NOTEBOOK)
 
