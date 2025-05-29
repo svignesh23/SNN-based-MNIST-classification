@@ -1,0 +1,21 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+T = 50
+tau_input = 2
+tau_feedback = 2
+
+A_t = np.exp(-np.arange(T) / tau_input)
+B_t = -np.exp(-np.arange(T) / tau_feedback)
+
+plt.figure(figsize=(10, 4))
+plt.plot(A_t, label="Input Decay A(t)", color='blue')
+plt.plot(B_t, label="Feedback Decay B(t)", color='red')
+plt.axhline(0, color='black', linestyle='--')
+plt.title("Input vs Feedback Decay Kernels")
+plt.xlabel("Time")
+plt.ylabel("Decay Value")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
