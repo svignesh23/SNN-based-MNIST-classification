@@ -1,0 +1,109 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from torchvision import datasets, transforms
+from torch.utils.data import DataLoader
+
+# Parameters
+T = 50
+tau_input = 2
+tau_feedback = 2
+gamma = 0.1
+W_feedback = 0.05
+np.random.seed(42)
+
+# Load 1 MNIST sample
+transform = transforms.Compose([transforms.ToTensor()])
+mnist_data = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+mnist_loader = DataLoader(mnist_data, batch_size=1, shuffle=False)
+
+# Get image = 5
+for img, lbl in mnist_loader:
+    if lbl.item() == 5:
+        image = img.squeeze().numpy()
+        break
+
+image_flat = image.flatten() / 1.0
+num_inputs = 784
+
+# Rate encoding: generate spike trains
+spike_trains = np.random.rand(num_inputs, T) < image_flat[:, None]
+
+# Decay kernels
+A_t = np.exp(-np.arange(T) / tau_input)
+B_t = -np.exp(-np.arange(T) / tau_feedback)
+
+# Weights and output arrays
+W = np.random.uniform(-0.1, 0.1, size=(num_inputs,))
+u = np.zeros(T)
+spike_probs = np.zeros(T)
+S_out = np.zeros(T)
+
+# Convolve input with A(t)
+X_total = np.zeros((num_inputs, T))
+for n in range(num_inputs):
+    X_total[n] = np.convolve(spike_trains[n], A_t, mode='full')[:T]
+
+# Time loop
+for t in range(T):
+    u[t] = np.sum(W * X_total[:, t]) + gamma
+
+    # Clip u[t] for numerical stability
+    u[t] = np.clip(u[t], -10, 10)
+
+    # Spike probability
+    spike_probs[t] = 1 / (1 + np.exp(-u[t]))
+
+    # Sample actual spike from Bernoulli distribution
+    S_out[t] = np.random.rand() < spike_probs[t]
+
+    # Feedback decay into future u[t]
+    if S_out[t] == 1:
+        for tf in range(t + 1, T):
+            u[tf] += W_feedback * B_t[tf - t]
+
+# --- Plots ---
+
+# Plot: Output membrane potential and spike probability
+plt.figure(figsize=(12, 6))
+
+plt.subplot(3, 1, 1)
+plt.plot(u, color='purple', label='Membrane Potential u(t)')
+plt.title("Membrane Potential u(t)")
+plt.ylabel("u(t)")
+plt.grid(True)
+plt.legend()
+
+plt.subplot(3, 1, 2)
+plt.plot(spike_probs, color='blue', label='Spike Probability y(t)')
+plt.title("Output Spike Probability y(t)")
+plt.ylabel("y(t)")
+plt.grid(True)
+plt.legend()
+
+plt.subplot(3, 1, 3)
+spike_times = np.where(S_out == 1)[0]
+plt.stem(spike_times, np.ones_like(spike_times), linefmt='r-', markerfmt='ro', basefmt='k-')
+plt.title("Sampled Output Spike Train")
+plt.xlabel("Time Step")
+plt.ylabel("Spike")
+plt.ylim(0, 1.2)
+plt.grid(True)
+
+# Convolve output spike train with feedback decay kernel
+tau_m = 5  # same as tau_feedback or you can vary
+B_kernel = -np.exp(-np.arange(T) / tau_m)
+output_feedback_decay = np.convolve(S_out, B_kernel, mode='full')[:T]
+
+# Plot: Feedback from output spike train (decay)
+plt.figure(figsize=(10, 4))
+plt.plot(output_feedback_decay, color='orange', label="Output Spike Decay via B(t)")
+plt.title("Output Spike Convolved with Feedback Kernel")
+plt.xlabel("Time Step")
+plt.ylabel("Feedback Contribution")
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+plt.tight_layout()
+plt.show()
