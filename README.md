@@ -37,4 +37,18 @@ Probabilistic Spike Generator
   5) PYTHON CODE FOR VISUALIZE RANDOM SPIKES
   6) PYTHON CODE FOR DESIGNING THE DECAY KERNEL
   7) PYHTON CODE FOR OUTPUT FILTERED SPIKE FEEDBACK
-  8) FULL CODE FOR CLASSIFICATION
+  8) MULTI-HEAD ATTENTION
+  9) FULL CODE FOR CLASSIFICATION
+
+**PACKAGES AND DEPENDENCIES**
+| Import                   | Library            | Purpose                    |
+| ------------------------ | ------------------ | -------------------------- |
+| `torch`                  | PyTorch core       | Tensors, GPU computation   |
+| `torch.nn`               | PyTorch NN module  | Layers, models             |
+| `torch.optim`            | PyTorch Optimizers | SGD, Adam, etc.            |
+| `torch.nn.functional`    | Functional ops     | Stateless functions        |
+| `torchvision.datasets`   | Torchvision        | Datasets like MNIST        |
+| `torchvision.transforms` | Torchvision        | Image preprocessing        |
+| `torch.utils.data`       | PyTorch utils      | DataLoader, Subset         |
+| `matplotlib.pyplot`      | Matplotlib         | Plotting and visualization |
+
