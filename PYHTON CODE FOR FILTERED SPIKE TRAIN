@@ -1,0 +1,72 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from torchvision import datasets, transforms
+from torch.utils.data import DataLoader
+
+# Parameters
+T = 100  # Number of time steps
+tau = 2  # Decay constant for the filter
+sample_index = 0  # Choose first MNIST image (from class 0 or 1)
+
+# Load MNIST and filter for classes 0 and 1
+transform = transforms.Compose([transforms.ToTensor()])
+mnist_data = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+mnist_loader = DataLoader(mnist_data, batch_size=1, shuffle=False)
+
+# Filter dataset to only include classes 0 and 1
+filtered_data = [(img, label) for img, label in mnist_data if label == 0 or label == 1]
+
+# Extract one image from class 0 or 1 (for this example, choosing the first one)
+images, labels = filtered_data[sample_index]
+image = images.squeeze().numpy()  # shape: (28, 28)
+
+# Normalize to [0, 1] (already done by ToTensor)
+image = image / 1.0
+
+# Generate rate-encoded spike trains for all 784 pixels
+spike_trains = np.random.rand(28, 28, T) < image[:, :, None]  # Rate encoding based on pixel intensity
+
+# Convolution filter (A_t = exp(-t/tau))
+t = np.arange(T)  # Time steps
+A_t = np.exp(-t / tau)  # Exponential decay
+
+# Apply convolution to each spike train (Si(t-1)) with the filter A_t
+filtered_spike_trains = np.zeros_like(spike_trains)
+
+for row in range(28):
+    for col in range(28):
+        spike_train = spike_trains[row, col]
+        # Apply the filter using convolution (no padding, same length output)
+        filtered_spike_trains[row, col] = np.convolve(spike_train, A_t, mode='same')
+
+
+def causal_exponential_filter(spike_train, tau):
+    T = len(spike_train)
+    filtered = np.zeros(T)
+    for t in range(1, T):
+        filtered[t] = filtered[t-1] * np.exp(-1 / tau) + spike_train[t-1]
+    return filtered
+tau = 2
+spikes_128 = spike_trains[4, 16]  # pixel 128 is at row=4, col=16
+filtered_128 = causal_exponential_filter(spikes_128, tau)
+
+# Plot spike train
+plt.figure(figsize=(10, 2))
+plt.stem(range(len(spikes_128)), spikes_128, basefmt="k-", linefmt='g-', markerfmt='go')
+plt.title("Input Spike Train for Neuron 128")
+plt.xlabel("Time Step")
+plt.ylabel("Spike")
+plt.ylim(-0.1, 1.2)
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# Plot filtered output
+plt.figure(figsize=(10, 2))
+plt.plot(filtered_128, color='blue')
+plt.title("Filtered Spike Train for Neuron 128 (Causal Exp Filter, τ=2)")
+plt.xlabel("Time Step")
+plt.ylabel("Filtered Output")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
