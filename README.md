@@ -24,7 +24,7 @@ The goal is to achieve FASTER, LOW-POWER, AND ADAPTIVE DIGIT RECOGNITION compare
        ↓
   Membrane Potentials (pot0, pot1)
        ↓
-Probabilistic Spike Generator
+  Probabilistic Spike Generator
        ↓
   Output Spikes (classification)
 
@@ -41,7 +41,7 @@ Probabilistic Spike Generator
   9) FULL CODE FOR CLASSIFICATION
 
 **INPUT FILES**
-MNIST DATA SET FROM TORCHVISION.
+MNIST data set from torchvision.
 
 **PACKAGES AND DEPENDENCIES**
 | Import                   | Library            | Purpose                    |
