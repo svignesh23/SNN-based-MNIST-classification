@@ -1,0 +1,43 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from torchvision import datasets, transforms
+from torch.utils.data import DataLoader
+
+# Parameters
+T = 100  # Number of time steps (increase for better resolution)
+sample_index = 0  # Choose first MNIST image (from class 0 or 1)
+
+# Load MNIST and filter for classes 0 and 1
+transform = transforms.Compose([transforms.ToTensor()])
+mnist_data = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+mnist_loader = DataLoader(mnist_data, batch_size=1, shuffle=False)
+
+# Filter dataset to only include classes 0 and 1
+filtered_data = [(img, label) for img, label in mnist_data if label == 0 or label == 1]
+
+# Extract one image from class 0 or 1 (for this example, choosing the first one)
+images, labels = filtered_data[sample_index]
+image = images.squeeze().numpy()  # shape: (28, 28)
+
+# Normalize to [0, 1] (already done by ToTensor)
+image = image / 1.0
+
+# Generate rate-encoded spike trains for all 784 pixels
+# Each pixel gets a spike train of length T
+spike_trains = np.random.rand(28, 28, T) < image[:, :, None]  # Rate encoding based on pixel intensity
+
+# Plot a 28x28 grid of spike trains
+fig, axes = plt.subplots(28, 28, figsize=(16, 16))
+fig.suptitle("Rate-Encoded Spike Trains for Each Pixel of a MNIST Image", fontsize=16)
+
+for i in range(28):
+    for j in range(28):
+        ax = axes[i, j]
+        ax.plot(spike_trains[i, j], color='black', linewidth=0.8)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_ylim(-0.1, 1.2)
+
+plt.tight_layout()
+plt.subplots_adjust(top=0.95)
+plt.show()
